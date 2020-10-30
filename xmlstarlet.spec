@@ -4,14 +4,15 @@
 #
 Name     : xmlstarlet
 Version  : 1.6.1
-Release  : 4
+Release  : 5
 URL      : https://sourceforge.net/projects/xmlstar/files/xmlstarlet/1.6.1/xmlstarlet-1.6.1.tar.gz
 Source0  : https://sourceforge.net/projects/xmlstar/files/xmlstarlet/1.6.1/xmlstarlet-1.6.1.tar.gz
 Summary  : No detailed summary available
 Group    : Development/Tools
 License  : MIT
-Requires: xmlstarlet-bin
-Requires: xmlstarlet-doc
+Requires: xmlstarlet-bin = %{version}-%{release}
+Requires: xmlstarlet-license = %{version}-%{release}
+Requires: xmlstarlet-man = %{version}-%{release}
 BuildRequires : libxml2-dev
 BuildRequires : libxslt-dev
 BuildRequires : sed
@@ -25,6 +26,7 @@ tr/diff/patch.
 %package bin
 Summary: bin components for the xmlstarlet package.
 Group: Binaries
+Requires: xmlstarlet-license = %{version}-%{release}
 
 %description bin
 bin components for the xmlstarlet package.
@@ -33,39 +35,68 @@ bin components for the xmlstarlet package.
 %package doc
 Summary: doc components for the xmlstarlet package.
 Group: Documentation
+Requires: xmlstarlet-man = %{version}-%{release}
 
 %description doc
 doc components for the xmlstarlet package.
 
 
+%package license
+Summary: license components for the xmlstarlet package.
+Group: Default
+
+%description license
+license components for the xmlstarlet package.
+
+
+%package man
+Summary: man components for the xmlstarlet package.
+Group: Default
+
+%description man
+man components for the xmlstarlet package.
+
+
 %prep
 %setup -q -n xmlstarlet-1.6.1
+cd %{_builddir}/xmlstarlet-1.6.1
 
 %build
 export http_proxy=http://127.0.0.1:9/
 export https_proxy=http://127.0.0.1:9/
 export no_proxy=localhost,127.0.0.1,0.0.0.0
-export LANG=C
-export SOURCE_DATE_EPOCH=1520290319
+export LANG=C.UTF-8
+export SOURCE_DATE_EPOCH=1604094133
+export GCC_IGNORE_WERROR=1
+export AR=gcc-ar
+export RANLIB=gcc-ranlib
+export NM=gcc-nm
+export CFLAGS="$CFLAGS -O3 -ffat-lto-objects -flto=4 "
+export FCFLAGS="$FFLAGS -O3 -ffat-lto-objects -flto=4 "
+export FFLAGS="$FFLAGS -O3 -ffat-lto-objects -flto=4 "
+export CXXFLAGS="$CXXFLAGS -O3 -ffat-lto-objects -flto=4 "
 %configure --disable-static --with-libxml-include-prefix=/usr/include/libxml2
 make  %{?_smp_mflags}
 
 %check
-export LANG=C
+export LANG=C.UTF-8
 export http_proxy=http://127.0.0.1:9/
 export https_proxy=http://127.0.0.1:9/
 export no_proxy=localhost,127.0.0.1,0.0.0.0
-make VERBOSE=1 V=1 %{?_smp_mflags} check
+make %{?_smp_mflags} check
 
 %install
-export SOURCE_DATE_EPOCH=1520290319
+export SOURCE_DATE_EPOCH=1604094133
 rm -rf %{buildroot}
+mkdir -p %{buildroot}/usr/share/package-licenses/xmlstarlet
+cp %{_builddir}/xmlstarlet-1.6.1/COPYING %{buildroot}/usr/share/package-licenses/xmlstarlet/e2355513274cd3bf5ea85bdf767a6bac54bdd6e6
+cp %{_builddir}/xmlstarlet-1.6.1/Copyright %{buildroot}/usr/share/package-licenses/xmlstarlet/e2355513274cd3bf5ea85bdf767a6bac54bdd6e6
 %make_install
-## make_install_append content
+## install_append content
 pushd %{buildroot}/usr/bin
 ln -sf xml xmlstarlet
 popd
-## make_install_append end
+## install_append end
 
 %files
 %defattr(-,root,root,-)
@@ -76,6 +107,13 @@ popd
 /usr/bin/xmlstarlet
 
 %files doc
-%defattr(-,root,root,-)
+%defattr(0644,root,root,0755)
 %doc /usr/share/doc/xmlstarlet/*
-%doc /usr/share/man/man1/*
+
+%files license
+%defattr(0644,root,root,0755)
+/usr/share/package-licenses/xmlstarlet/e2355513274cd3bf5ea85bdf767a6bac54bdd6e6
+
+%files man
+%defattr(0644,root,root,0755)
+/usr/share/man/man1/xmlstarlet.1
